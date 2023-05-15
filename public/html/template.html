@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Template</title>
+	<link href="/public/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+	<main>
+
+		{{ template "header.tmpl" }}
+
+		<div class="container d-flex flex-column min-vh-100">
+			<div class="flex-grow-1">
+				<div class="row">
+					<div class="col-12 col-md-8 offset-md-2 mt-4">
+
+
+					</div>
+				</div>
+			</div>
+			<footer class="py-3 my-4">
+				<p class="text-center text-muted">© 2023 </p>
+			</footer>
+	</main>
+
+    <script type="module">
+      import mermaid from '/public/js/mermaid/mermaid.esm.mjs';
+      mermaid.initialize({ startOnLoad: true });
+    </script>
+	
+	<script src="https://cdn.jsdelivr.net/npm/mermaid@10.1.0/dist/mermaid.min.js"></script>
+	<script src="/public/js/bootstrap.min.js" crossorigin="anonymous"></script>
+	<script src="/public/js/darkmode.js" crossorigin="anonymous"></script>
+</body>
+
+</html>
