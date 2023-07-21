@@ -1,49 +1,40 @@
 package main
 
 import (
-	"fmt"
-	"html/template"
+	"embed"
+	"io/fs"
 	"log"
 	"net/http"
-	"path/filepath"
-	"strings"
-
-	"github.com/gorilla/mux"
+	"text/template"
 )
+
+//go:embed public/*
+var publicFS embed.FS
 
 func main() {
 
-	router := mux.NewRouter()
-	router.HandleFunc("/", indexHandler).Methods("GET")
-	router.PathPrefix("/public/").HandlerFunc(getPublic)
+	http.Handle("/public/", publicHandler())
+	http.HandleFunc("/", indexHandler)
 
-	fmt.Println("starting on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+}
+
+func publicHandler() http.Handler {
+	httpFS, err := fs.Sub(publicFS, "public")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return http.StripPrefix("/public/", http.FileServer(http.FS(httpFS)))
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/index.html"))
+	tmpl := template.Must(template.ParseFS(publicFS, "public/templates/header.tmpl", "public/html/index.html"))
 	err := tmpl.ExecuteTemplate(w, "index.html", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
-
-func getPublic(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	filePath := filepath.Join(".", path)
-
-	if strings.HasPrefix(path, "/public/css") {
-		w.Header().Set("Content-Type", "text/css")
-	} else if strings.HasPrefix(path, "/public/js") {
-		w.Header().Set("Content-Type", "application/javascript")
-	} else if strings.HasPrefix(path, "/public/images") {
-		w.Header().Set("Content-Type", "image/jpeg")
-	} else if strings.HasPrefix(path, "/data/images") {
-		w.Header().Set("Content-Type", "image/png")
-	} else if strings.HasPrefix(path, "/public/fonts") {
-		w.Header().Set("Content-Type", "fonts/font")
-	}
-
-	http.ServeFile(w, r, filePath)
 }
