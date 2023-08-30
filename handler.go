@@ -2,15 +2,18 @@ package main
 
 import (
 	"embed"
-	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
 	"text/template"
+
+	"github.com/gorilla/sessions"
 )
 
 //go:embed public/*
 var publicFS embed.FS
+
+var store = sessions.NewCookieStore([]byte("secret"))
 
 func publicHandler() http.Handler {
 	httpFS, err := fs.Sub(publicFS, "public")
@@ -29,11 +32,33 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "user-session")
+		if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func profileHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "user-session")
+	email := session.Values["email"]
+
+	tmpl := template.Must(template.ParseFS(publicFS, "public/templates/header.tmpl", "public/html/profile.html"))
+	err := tmpl.ExecuteTemplate(w, "profile.html", email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		tmpl := template.Must(template.ParseFS(publicFS, "public/templates/header.tmpl", "public/html/login.html"))
-		err := tmpl.ExecuteTemplate(w, "login.html", nil)
+		tmpl := template.Must(template.ParseFS(publicFS, "public/templates/header.tmpl", "public/html/register.html"))
+		err := tmpl.ExecuteTemplate(w, "register.html", nil)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -49,7 +74,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Fprintf(w, "User %s successfully registered", email)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
 	}
 }
 
@@ -70,6 +95,22 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		fmt.Fprintf(w, "Login succeeded as %s", email)
+
+		session, _ := store.Get(r, "user-session")
+		session.Values["authenticated"] = true
+		session.Values["email"] = email
+		session.Save(r, w)
+
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
 	}
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "user-session")
+	session.Options = &sessions.Options{
+		MaxAge: -1,
+	}
+	session.Save(r, w)
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

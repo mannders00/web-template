@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -39,6 +40,9 @@ func register(email string, password string) error {
 
 	_, err = stmt.Exec(email, hashedPassword)
 	if err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint failed: users.email") {
+			return fmt.Errorf("User exists")
+		}
 		return err
 	}
 
