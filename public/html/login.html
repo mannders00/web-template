@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Template</title>
+    <link href="/public/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/public/css/sign-in.css" rel="stylesheet">
+</head>
+
+<body>
+
+
+    {{ template "header.tmpl" }}
+
+
+    <main class="form-signin w-100 h-100 m-auto mt-4">
+        <form action="/login" method="POST">
+            <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+
+            <div class="form-floating">
+                <input type="email" name="email" class="form-control" id="floatingInput" placeholder="name@example.com">
+                <label for="floatingInput">Email address</label>
+            </div>
+            <div class="form-floating">
+                <input type="password" name="password" class="form-control" id="floatingPassword"
+                    placeholder="Password">
+                <label for="floatingPassword">Password</label>
+            </div>
+            <div class="form-check text-start my-3">
+                <input class="form-check-input" type="checkbox" value="remember-me" id="flexCheckDefault">
+                <label class="form-check-label" for="flexCheckDefault">
+                    Remember me
+                </label>
+            </div>
+            <button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
+            <button class="btn btn-outline-primary w-100 py-2 mt-4" type="submit">Register</button>
+        </form>
+        <footer class="py-3 my-4">
+            <p class="text-center text-muted">© 2023 </p>
+        </footer>
+    </main>
+
+    <script src="/public/js/bootstrap.bundle.js" crossorigin="anonymous"></script>
+    <script src="/public/js/darkmode.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

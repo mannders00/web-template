@@ -15,17 +15,6 @@
 		{{ template "header.tmpl" }}
 
 		<div class="container">
-
-			<div class="col-8-sm mx-auto align-content-center p-4">
-				<div class="d-flex justify-content-end">
-					<button hx-post="/clicked" hx-swap="outerHTML" class="btn btn-primary">click me hehe</button>
-					<a href="/.ory/ui/settings" class="btn btn-danger mx-2">Logout</a>
-				</div>
-				<hr />
-				<h2>Your Session Data:</h2>
-				<code>{{ . }}</code>
-			</div>
-
 		</div>
 
 		<footer class="py-3 my-4">
@@ -33,14 +22,9 @@
 		</footer>
 	</main>
 
-	<script type="module">
-		import mermaid from '/public/js/mermaid/mermaid.esm.mjs';
-		mermaid.initialize({ startOnLoad: true });
-	</script>
 	<script src="/public/js/darkmode.js" crossorigin="anonymous"></script>
-	<script src="https://cdn.jsdelivr.net/npm/mermaid@10.1.0/dist/mermaid.min.js"></script>
-	<script src="/public/js/bootstrap.min.js" crossorigin="anonymous"></script>
-	<script src="/public/js/htmx.min.js" crossorigin="anonymous"></script>
+	<script src="/public/js/bootstrap.bundle.js" crossorigin="anonymous"></script>
+	<script src="/public/js/htmx.js" crossorigin="anonymous"></script>
 
 </body>
 
