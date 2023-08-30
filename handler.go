@@ -28,8 +28,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.Method)
+func registerHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		tmpl := template.Must(template.ParseFS(publicFS, "public/templates/header.tmpl", "public/html/login.html"))
@@ -40,6 +39,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		email := r.FormValue("email")
 		password := r.FormValue("password")
-		fmt.Println("hi", email, password)
+		fmt.Fprintf(w, fmt.Sprintf("%s %s", email, password))
 	}
 }
