@@ -1,9 +1,8 @@
-package main
+package db
 
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -11,23 +10,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var db *sql.DB
-
-func initDB() {
-	var err error
-	db, err = sql.Open("sqlite3", "data.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	stmt := `CREATE TABLE users (email TEXT UNIQUE, hashed_password TEXT)`
-	_, err = db.Exec(stmt)
-	if err != nil {
-		log.Print(err)
-	}
-}
-
-func register(email string, password string) error {
+func Register(email string, password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -49,7 +32,7 @@ func register(email string, password string) error {
 	return nil
 }
 
-func login(email string, password string) error {
+func Login(email string, password string) error {
 	var hashedPassword []byte
 
 	err := db.QueryRow("SELECT hashed_password FROM users WHERE email = ?", email).Scan(&hashedPassword)

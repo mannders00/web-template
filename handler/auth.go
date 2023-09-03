@@ -1,38 +1,16 @@
-package main
+package handler
 
 import (
-	"embed"
-	"io/fs"
-	"log"
 	"net/http"
 	"text/template"
 
 	"github.com/gorilla/sessions"
+	"github.com/matta9001/web-template/db"
 )
-
-//go:embed public/*
-var publicFS embed.FS
 
 var store = sessions.NewCookieStore([]byte("secret"))
 
-func publicHandler() http.Handler {
-	httpFS, err := fs.Sub(publicFS, "public")
-	if err != nil {
-		log.Fatal(err)
-	}
-	return http.StripPrefix("/public/", http.FileServer(http.FS(httpFS)))
-}
-
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-
-	tmpl := template.Must(template.ParseFS(publicFS, "public/templates/header.tmpl", "public/html/index.html"))
-	err := tmpl.ExecuteTemplate(w, "index.html", nil)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func authMiddleware(next http.Handler) http.Handler {
+func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "user-session")
 		if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
@@ -43,7 +21,7 @@ func authMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func profileHandler(w http.ResponseWriter, r *http.Request) {
+func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "user-session")
 	email := session.Values["email"]
 
@@ -54,7 +32,7 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func registerHandler(w http.ResponseWriter, r *http.Request) {
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		tmpl := template.Must(template.ParseFS(publicFS, "public/templates/header.tmpl", "public/html/register.html"))
@@ -67,7 +45,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		email := r.FormValue("email")
 		password := r.FormValue("password")
-		err := register(email, password)
+		err := db.Register(email, password)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -78,7 +56,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		tmpl := template.Must(template.ParseFS(publicFS, "public/templates/header.tmpl", "public/html/login.html"))
@@ -90,7 +68,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		email := r.FormValue("email")
 		password := r.FormValue("password")
-		err := login(email, password)
+		err := db.Login(email, password)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -105,7 +83,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func logoutHandler(w http.ResponseWriter, r *http.Request) {
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "user-session")
 	session.Options = &sessions.Options{
 		MaxAge: -1,
