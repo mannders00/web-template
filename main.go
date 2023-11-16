@@ -1,31 +1,21 @@
 package main
 
 import (
-	"embed"
+	"fmt"
 	"log"
 	"net/http"
-
-	"github.com/matta9001/web-template/db"
-	"github.com/matta9001/web-template/handler"
 )
-
-//go:embed public/*
-var publicFS embed.FS
 
 func main() {
 
-	db.Init()
-	handler.InitializeFS(publicFS)
+	port := ":8080"
 
-	http.Handle("/public/", handler.PublicHandler())
-	http.HandleFunc("/", handler.IndexHandler)
+	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("./public"))))
 
-	http.Handle("/profile", handler.AuthMiddleware(http.HandlerFunc(handler.ProfileHandler)))
-	http.HandleFunc("/register", handler.RegisterHandler)
-	http.HandleFunc("/login", handler.LoginHandler)
-	http.HandleFunc("/logout", handler.LogoutHandler)
+	http.HandleFunc("/", IndexHandler)
 
-	err := http.ListenAndServe(":8080", nil)
+	fmt.Printf("Listening on %s", port)
+	err := http.ListenAndServe(port, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
